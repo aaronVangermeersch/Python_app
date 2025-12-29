@@ -45,3 +45,48 @@ def init_db():
         )
 
         conn.commit()
+        
+from src.models.workout import Workout
+from src.models.exercise import Exercise
+
+def insert_workout(workout: Workout) -> int:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+          INSERT INTO workouts (date, notes)
+          VALUES (?, ?)
+          """,
+          (workout.date, workout.notes),
+            )
+        conn.commit()
+        return cursor.lastrowid
+    
+def insert_exercise(exercise: Exercise) -> int:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO exercises (
+                workout_id,
+                exercise_name,
+                muscle_group,
+                sets,
+                reps,
+                weight
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                exercise.workout_id,
+                exercise.exercise_name,
+                exercise.muscle_group,
+                exercise.sets,
+                exercise.reps,
+                exercise.weight,
+            ),
+            )
+        
+        conn.commit()
+        return cursor.lastrowid        
+        
