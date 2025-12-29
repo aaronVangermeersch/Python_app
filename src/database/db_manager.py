@@ -1,6 +1,7 @@
 import sqlite3
 import configparser
 from pathlib import Path
+import csv
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 SETTINGS_FILE = BASE_DIR / "settings.ini"
@@ -88,5 +89,53 @@ def insert_exercise(exercise: Exercise) -> int:
             )
         
         conn.commit()
-        return cursor.lastrowid        
+        return cursor.lastrowid   
+
+def show_all_workouts():
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, date, notes, created_at
+            FROM workouts
+            ORDER BY date DESC, id DESC
+            """
+        )
+        return cursor.fetchall()
+
+def export_workouts_to_CSV(csv_path: str):
+    with get_connection() as conn, open(csv_path, mode="w", newline="",encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            [
+                "workout_id",
+                "date",
+                "notes",
+                "exercise_name",
+                "muscle_group",
+                "sets",
+                "reps",
+                "weight",
+                ]
+             )
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT
+                w.id,
+                w.date,
+                w.notes,
+                e.exercise_name,
+                e.muscle_group,
+                e.sets,
+                e.reps,
+                e.weight
+            FROM workouts w
+            LEFT JOIN exercises e ON w.id = e.workout_id
+            ORDER BY w.date, w.id, e.id
+            """
+        )
+
+        for row in cursor.fetchall():
+            writer.writerow(row)
         
