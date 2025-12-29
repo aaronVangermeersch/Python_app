@@ -91,7 +91,7 @@ def insert_exercise(exercise: Exercise) -> int:
         conn.commit()
         return cursor.lastrowid   
 
-def show_all_workouts():
+def get_all_workouts():
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -102,9 +102,25 @@ def show_all_workouts():
             """
         )
         return cursor.fetchall()
+    
+def get_exercises_for_workout(workout_id: int):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT exercise_name, muscle_group, sets, reps, weight
+            FROM exercises
+            WHERE workout_id = ?
+            ORDER BY id
+            """,
+            (workout_id,),
+        )
+        return cursor.fetchall()
 
-def export_workouts_to_CSV(csv_path: str):
-    with get_connection() as conn, open(csv_path, mode="w", newline="",encoding="utf-8") as f:
+def export_workouts_to_csv(csv_path: str):
+    with get_connection() as conn, open(
+        csv_path, mode="w", newline="", encoding="utf-8"
+    ) as f:
         writer = csv.writer(f)
         writer.writerow(
             [
@@ -116,8 +132,9 @@ def export_workouts_to_CSV(csv_path: str):
                 "sets",
                 "reps",
                 "weight",
-                ]
-             )
+            ]
+        )
+
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -138,4 +155,3 @@ def export_workouts_to_CSV(csv_path: str):
 
         for row in cursor.fetchall():
             writer.writerow(row)
-        
