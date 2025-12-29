@@ -1,6 +1,14 @@
 from src.database.db_manager import init_db, insert_workout, insert_exercise
 from src.models.workout import Workout
 from src.models.exercise import Exercise
+from pathlib import Path
+from src.database.db_manager import (
+    init_db,
+    insert_workout,
+    insert_exercise,
+    show_all_workouts,
+    export_workouts_to_CSV,
+)
 
 
 def create_workout_with_exercises():
@@ -35,6 +43,15 @@ def create_workout_with_exercises():
         print("Oefening opgeslagen.")
 
     print("Training compleet opgeslagen.\n")
+    
+def export_to_csv():
+    base_dir = Path(__file__).resolve().parents[2]
+    export_dir = base_dir / "exports"
+    export_dir.mkdir(exist_ok=True)
+
+    csv_path = export_dir / "workouts_export.csv"
+    export_workouts_to_CSV(str(csv_path))
+    print(f"Export voltooid: {csv_path}\n")
 
 
 def main_menu():
@@ -43,12 +60,18 @@ def main_menu():
     while True:
         print("=== FITNESSTRACKER ===")
         print("1. Nieuwe training toevoegen")
+        print("2. Alle trainingen tonen")
+        print("3. Exporteren naar CSV")
         print("0. Afsluiten")
 
         choice = input("Kies een optie: ").strip()
 
         if choice == "1":
             create_workout_with_exercises()
+        elif choice == "2":
+            show_all_workouts()
+        elif choice == "3":
+            export_workouts_to_CSV()
         elif choice == "0":
             print("Tot ziens!")
             break
